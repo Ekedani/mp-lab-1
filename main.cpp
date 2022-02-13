@@ -115,6 +115,26 @@ int main() {
                 goto PROCESS_FILE;
             }
     //TODO: SORT AND OUTPUT
+    SORT_BY_FREQUENCY:
+    bool swapped = false;
+        int j = 0;
+        SORT_INNER:
+        if(wordsFrequency[j] < wordsFrequency[j + 1]){
+            int freqTmp = wordsFrequency[j];
+            string wordTmp = wordsArray[j];
+            wordsFrequency[j] = wordsFrequency[j + 1];
+            wordsArray[j] = wordsArray[j + 1];
+            wordsFrequency[j + 1] = freqTmp;
+            wordsArray[j + 1] = wordTmp;
+            swapped = true;
+        }
+        j++;
+        if(j < wordsNum){
+            goto SORT_INNER;
+        }
+        if(swapped){
+            goto SORT_BY_FREQUENCY;
+        }
     for (int i = 0; i < wordsNum; ++i) {
         cout << wordsArray[i] << " : " << wordsFrequency[i] << '\n';
     }
