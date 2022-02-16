@@ -49,24 +49,22 @@ int main() {
                 int wordSize = wordEndIdx - wordStartIdx;
                 // Ignoring noise words
                 if(wordSize > 1){
-
-                }
-                string test;
-                COPY_SUBSTR:
-                if(wordStartIdx < wordEndIdx){
-                    if(line[wordStartIdx] >= 65 && line[wordStartIdx] <= 90){
-                        test += line[wordStartIdx] + 32;
+                    string test;
+                    COPY_SUBSTR:
+                    if(wordStartIdx < wordEndIdx){
+                        if(line[wordStartIdx] >= 65 && line[wordStartIdx] <= 90){
+                            test += line[wordStartIdx] + 32;
+                        }
+                        else{
+                            test += line[wordStartIdx];
+                        }
+                        wordStartIdx++;
+                        goto COPY_SUBSTR;
                     }
-                    else{
-                        test += line[wordStartIdx];
-                    }
-                    wordStartIdx++;
-                    goto COPY_SUBSTR;
-                }
-                int comparedWordIdx = 0;
-                CHECK_EXISTING_WORDS:
-                bool stringsEqual = true;
-                int comparedCharIdx = 0;
+                    int comparedWordIdx = 0;
+                    CHECK_EXISTING_WORDS:
+                    bool stringsEqual = true;
+                    int comparedCharIdx = 0;
                     CHECK_IF_EQUAL:
                     stringsEqual &= (test[comparedCharIdx] == wordsArray[comparedWordIdx][comparedCharIdx]);
                     if(stringsEqual && comparedCharIdx < wordSize){
@@ -85,22 +83,26 @@ int main() {
                         wordsFrequency[wordsNum] = 1;
                         wordsNum++;
                     }
-                if(wordsNum >= 0.8 * wordsArraySize){
-                    string* oldWords = wordsArray;
-                    int* oldFrequency = wordsFrequency;
-                    wordsArraySize *= 2;
-                    wordsArray = new string[wordsArraySize];
-                    wordsFrequency = new int[wordsArraySize];
-                    int wordIndex = 0;
-                    COPY_TO_NEW:
+                    if(wordsNum >= 0.8 * wordsArraySize){
+                        string* oldWords = wordsArray;
+                        int* oldFrequency = wordsFrequency;
+                        wordsArraySize *= 2;
+                        wordsArray = new string[wordsArraySize];
+                        wordsFrequency = new int[wordsArraySize];
+                        int wordIndex = 0;
+                        COPY_TO_NEW:
                         wordsArray[wordIndex] = oldWords[wordIndex];
                         wordsFrequency[wordIndex] = oldFrequency[wordIndex];
                         wordIndex++;
                         if(wordIndex < wordsNum){
                             goto COPY_TO_NEW;
                         }
-                    delete[] oldWords;
-                    delete [] oldFrequency;
+                        delete[] oldWords;
+                        delete [] oldFrequency;
+                    }
+                }
+                else{
+                    wordStartIdx = wordEndIdx;
                 }
 
                 if(wordEndIdx != lineSize){
@@ -110,6 +112,7 @@ int main() {
             if(!file.eof()){
                 goto PROCESS_FILE;
             }
+
     SORT_BY_FREQUENCY:
     bool swapped = false;
         int j = 0;
@@ -124,15 +127,17 @@ int main() {
             swapped = true;
         }
         j++;
-        if(j < wordsNum){
+        if(j < wordsNum - 1){
             goto SORT_INNER;
         }
         if(swapped){
             goto SORT_BY_FREQUENCY;
         }
     for (int i = 0; i < wordsNum; ++i) {
-        cout << wordsArray[i] << " : " << wordsFrequency[i] << '\n';
+        cout << wordsArray[i] << " : " << wordsFrequency[i] << " #" << i << '\n';
+
     }
+    cout << wordsNum;
     file.close();
     return 0;
 }
