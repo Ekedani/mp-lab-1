@@ -5,7 +5,10 @@
 using namespace std;
 
 const string FILE_ADDRESS = "D:\\Programming\\mp-lab-1\\data.txt";
-const int NUM_OF_WORDS = 25;
+const int NUM_OF_DISPLAYED_WORDS = 25;
+
+const int NUM_OF_STOP_WORDS = 3;
+const char* STOP_WORDS[] = { "for", "in", "the"};
 
 int main() {
     ifstream file;
@@ -34,20 +37,26 @@ int main() {
         }
 
         PROCESS_LINE:
+            // I really just wanna die
             FIND_WORD_START:
-                if(line[wordStartIdx] >= 32 && line[wordStartIdx] <= 47){
+                if (!((line[wordStartIdx] >= '0' && line[wordStartIdx] <= '9') ||
+                      ((line[wordStartIdx] >= 'A' && line[wordStartIdx] <= 'Z')) ||
+                      ((line[wordStartIdx] >= 'a' && line[wordStartIdx] <= 'z')))) {
                     wordStartIdx++;
                     goto FIND_WORD_START;
                 }
                 wordEndIdx = wordStartIdx;
             FIND_WORD_END:
-                if(!(wordEndIdx == lineSize || (line[wordEndIdx] >= 32 && line[wordEndIdx] <= 47 && line[wordEndIdx] != '-'))){
+                if(wordEndIdx < lineSize && (((line[wordEndIdx] >= '0' && line[wordEndIdx] <= '9') ||
+                                              ((line[wordEndIdx] >= 'A' && line[wordEndIdx] <= 'Z')) ||
+                                              ((line[wordEndIdx] >= 'a' && line[wordEndIdx] <= 'z'))) ||
+                                              line[wordEndIdx] == '-')){
                     wordEndIdx++;
                     goto FIND_WORD_END;
                 }
             PROCESS_WORD:
                 int wordSize = wordEndIdx - wordStartIdx;
-                // Ignoring noise words
+                // Ignoring noise words (size less than 1)
                 if(wordSize > 1){
                     string test;
                     COPY_SUBSTR:
@@ -105,7 +114,7 @@ int main() {
                     wordStartIdx = wordEndIdx;
                 }
 
-                if(wordEndIdx != lineSize){
+                if(wordEndIdx < lineSize){
                     goto PROCESS_LINE;
                 }
 
