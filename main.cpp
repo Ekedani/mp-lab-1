@@ -7,14 +7,6 @@ using namespace std;
 const string FILE_ADDRESS = "D:\\Programming\\mp-lab-1\\data.txt";
 const int NUM_OF_WORDS = 25;
 
-void swap(int *xp, int *yp)
-{
-    int temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
-
-
 int main() {
     ifstream file;
     file.open(FILE_ADDRESS);
@@ -43,19 +35,23 @@ int main() {
 
         PROCESS_LINE:
             FIND_WORD_START:
-                if(line[wordStartIdx] == ' '){
+                if(line[wordStartIdx] >= 32 && line[wordStartIdx] <= 47){
                     wordStartIdx++;
                     goto FIND_WORD_START;
                 }
                 wordEndIdx = wordStartIdx;
             FIND_WORD_END:
-                if(!(wordEndIdx == lineSize || line[wordEndIdx] == ' ')){
+                if(!(wordEndIdx == lineSize || (line[wordEndIdx] >= 32 && line[wordEndIdx] <= 47 && line[wordEndIdx] != '-'))){
                     wordEndIdx++;
                     goto FIND_WORD_END;
                 }
             PROCESS_WORD:
-                string test;
                 int wordSize = wordEndIdx - wordStartIdx;
+                // Ignoring noise words
+                if(wordSize > 1){
+
+                }
+                string test;
                 COPY_SUBSTR:
                 if(wordStartIdx < wordEndIdx){
                     if(line[wordStartIdx] >= 65 && line[wordStartIdx] <= 90){
@@ -114,7 +110,6 @@ int main() {
             if(!file.eof()){
                 goto PROCESS_FILE;
             }
-    //TODO: SORT AND OUTPUT
     SORT_BY_FREQUENCY:
     bool swapped = false;
         int j = 0;
