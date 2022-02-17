@@ -94,18 +94,21 @@ int main() {
 
                     // Check if new word
                     int comparedExWordIdx = 0;
+                    bool stringsExEqual = false;
                     CHECK_EXISTING_WORDS:
-                    bool stringsExEqual = true;
-                    int comparedExCharIdx = 0;
-                    CHECK_IF_EQUAL_TO_EX:
-                    stringsExEqual &= (test[comparedExCharIdx] == wordsArray[comparedExWordIdx][comparedExCharIdx]);
-                    if(stringsExEqual && comparedExCharIdx < wordSize){
-                        comparedExCharIdx++;
-                        goto CHECK_IF_EQUAL_TO_EX;
-                    }
-                    if(!stringsExEqual && comparedExWordIdx < wordsNum - 1){
-                        comparedExWordIdx++;
-                        goto CHECK_EXISTING_WORDS;
+                    if(comparedExWordIdx < wordsNum){
+                        stringsExEqual = true;
+                        int comparedExCharIdx = 0;
+                        CHECK_IF_EQUAL_TO_EX:
+                        stringsExEqual &= (test[comparedExCharIdx] == wordsArray[comparedExWordIdx][comparedExCharIdx]);
+                        if(stringsExEqual && comparedExCharIdx < wordSize){
+                            comparedExCharIdx++;
+                            goto CHECK_IF_EQUAL_TO_EX;
+                        }
+                        if(!stringsExEqual){
+                            comparedExWordIdx++;
+                            goto CHECK_EXISTING_WORDS;
+                        }
                     }
                     if(stringsExEqual){
                         wordsFrequency[comparedExWordIdx]++;
