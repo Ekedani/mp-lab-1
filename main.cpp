@@ -4,21 +4,21 @@
 
 using namespace std;
 
-const string FILE_ADDRESS = "task1_input.txt";
-const int NUM_OF_DISPLAYED_WORDS = 25;
+const string FILE_ADDRESS = "task2_input.txt";
 
-// Just as example of stop words handling
-const int NUM_OF_STOP_WORDS = 7;
-const char *STOP_WORDS[] = {"in", "on", "out", "of", "the", "an", "and"};
+const int LINES_PER_PAGE = 45;
 
 int main() {
     ifstream file;
     file.open(FILE_ADDRESS);
-
     int wordsArraySize = 10;
     int wordsNum = 0;
     string *wordsArray = new string[wordsArraySize];
     int *wordsFrequency = new int[wordsArraySize];
+
+    int **wordsPages = new int *[wordsArraySize];
+    int *pagesNums = new int[wordsArraySize];
+    int *pagesCapacities = new int[wordsArraySize];
 
     int wordStartIdx;
     int wordEndIdx;
@@ -26,7 +26,15 @@ int main() {
     string currentLine;
     int lineSize;
 
+    int currentPageNum = 0;
+    int currentLineNum = 0;
+
+
     PROCESS_FILE:
+    if (currentLineNum % LINES_PER_PAGE == 0) {
+        currentPageNum++;
+    }
+    currentLineNum++;
     getline(file, currentLine);
     lineSize = 0;
     wordStartIdx = 0;
@@ -54,10 +62,9 @@ int main() {
         wordEndIdx++;
         goto FIND_WORD_END;
     }
-
     int wordSize = wordEndIdx - wordStartIdx;
-    // Ignoring noise words (size must be greater than 1)
-    if (wordSize > 1) {
+
+    if (wordSize > 0) {
         char currentWord[wordSize + 1];
         currentWord[wordSize] = '\0';
         int lastCharIdx = 0;
@@ -72,27 +79,6 @@ int main() {
             }
             wordStartIdx++;
             goto COPY_SUBSTR;
-        }
-
-        // Check if stop word
-        int comparedStopWordIdx = 0;
-        CHECK_STOP_WORDS:
-        if (comparedStopWordIdx < NUM_OF_STOP_WORDS) {
-            bool stringsStopEqual = true;
-            int comparedStopCharIdx = 0;
-            CHECK_IF_EQUAL_TO_STOP:
-            stringsStopEqual &= (currentWord[comparedStopCharIdx] ==
-                                 STOP_WORDS[comparedStopWordIdx][comparedStopCharIdx]);
-            if (stringsStopEqual && comparedStopCharIdx < wordSize) {
-                comparedStopCharIdx++;
-                goto CHECK_IF_EQUAL_TO_STOP;
-            }
-            if (!stringsStopEqual) {
-                comparedStopWordIdx++;
-                goto CHECK_STOP_WORDS;
-            } else {
-                goto PROCESS_LINE;
-            }
         }
 
         // Check if new word
@@ -115,27 +101,65 @@ int main() {
         }
         if (stringsExEqual) {
             wordsFrequency[comparedExWordIdx]++;
+            if (wordsFrequency[comparedExWordIdx] < 100) {
+                if (wordsPages[comparedExWordIdx][pagesNums[comparedExWordIdx] - 1] != currentPageNum) {
+                    wordsPages[comparedExWordIdx][pagesNums[comparedExWordIdx]] = currentPageNum;
+                    pagesNums[comparedExWordIdx]++;
+                }
+                if (pagesNums[comparedExWordIdx] >= 0.8 * pagesCapacities[comparedExWordIdx]) {
+                    int *oldPages = wordsPages[comparedExWordIdx];
+                    pagesCapacities[comparedExWordIdx] *= 2;
+                    wordsPages[comparedExWordIdx] = new int[pagesCapacities[comparedExWordIdx]];
+                    int wordIndex = 0;
+                    COPY_PAGES_TO_NEW:
+                    if (wordIndex < pagesNums[comparedExWordIdx]) {
+                        wordsPages[comparedExWordIdx][wordIndex] = oldPages[wordIndex];
+                        wordIndex++;
+                        goto COPY_PAGES_TO_NEW;
+                    }
+                    delete[] oldPages;
+                }
+            }
         } else {
             wordsArray[wordsNum] = currentWord;
             wordsFrequency[wordsNum] = 1;
+            wordsPages[wordsNum] = new int[10];
+            wordsPages[wordsNum][0] = currentPageNum;
+            pagesCapacities[wordsNum] = 10;
+            pagesNums[wordsNum] = 1;
             wordsNum++;
         }
         if (wordsNum >= 0.8 * wordsArraySize) {
             string *oldWords = wordsArray;
             int *oldFrequency = wordsFrequency;
+            int **oldPages = wordsPages;
+            int *oldPagesNums = pagesNums;
+            int *oldPagesCapacities = pagesCapacities;
+
             wordsArraySize *= 2;
             wordsArray = new string[wordsArraySize];
             wordsFrequency = new int[wordsArraySize];
+            wordsPages = new int *[wordsArraySize];
+            pagesNums = new int[wordsArraySize];
+            pagesCapacities = new int[wordsArraySize];
+
             int wordIndex = 0;
             COPY_TO_NEW:
             wordsArray[wordIndex] = oldWords[wordIndex];
             wordsFrequency[wordIndex] = oldFrequency[wordIndex];
+            wordsPages[wordIndex] = oldPages[wordIndex];
+            pagesNums[wordIndex] = oldPagesNums[wordIndex];
+            pagesCapacities[wordIndex] = oldPagesCapacities[wordIndex];
             wordIndex++;
+
             if (wordIndex < wordsNum) {
                 goto COPY_TO_NEW;
             }
             delete[] oldWords;
             delete[] oldFrequency;
+            delete[] oldPages;
+            delete[] oldPagesCapacities;
+            delete[] oldPagesNums;
         }
     } else {
         wordStartIdx = wordEndIdx;
@@ -149,34 +173,38 @@ int main() {
         goto PROCESS_FILE;
     }
 
-    file.close();
-    SORT_BY_FREQUENCY:
-    bool swapped = false;
-    int j = 0;
-    SORT_INNER:
-    if (wordsFrequency[j] < wordsFrequency[j + 1]) {
-        int freqTmp = wordsFrequency[j];
-        string wordTmp = wordsArray[j];
-        wordsFrequency[j] = wordsFrequency[j + 1];
-        wordsArray[j] = wordsArray[j + 1];
-        wordsFrequency[j + 1] = freqTmp;
-        wordsArray[j + 1] = wordTmp;
-        swapped = true;
-    }
-    j++;
-    if (j < wordsNum - 1) {
-        goto SORT_INNER;
-    }
-    if (swapped) {
-        goto SORT_BY_FREQUENCY;
+    string *oldWords = wordsArray;
+    int *oldFrequency = wordsFrequency;
+    int **oldPages = wordsPages;
+    int *oldPagesNums = pagesNums;
+    int *oldPagesCapacities = pagesCapacities;
+
+    wordsArray = new string[wordsArraySize];
+    wordsFrequency = new int[wordsArraySize];
+    wordsPages = new int *[wordsArraySize];
+    pagesNums = new int[wordsArraySize];
+    pagesCapacities = new int[wordsArraySize];
+
+    int wordIndex = 0;
+    COPY_INFREQUENT_TO_NEW:
+    wordsArray[wordIndex] = oldWords[wordIndex];
+    wordsFrequency[wordIndex] = oldFrequency[wordIndex];
+    wordsPages[wordIndex] = oldPages[wordIndex];
+    pagesNums[wordIndex] = oldPagesNums[wordIndex];
+    pagesCapacities[wordIndex] = oldPagesCapacities[wordIndex];
+    wordIndex++;
+
+    if (wordIndex < wordsNum) {
+        goto COPY_INFREQUENT_TO_NEW;
     }
 
-    int outputWordIdx = 0;
-    OUTPUT_WORDS:
-    if (outputWordIdx < wordsNum && outputWordIdx < NUM_OF_DISPLAYED_WORDS) {
-        cout << wordsArray[outputWordIdx] << " - " << wordsFrequency[outputWordIdx] << '\n';
-        outputWordIdx++;
-        goto OUTPUT_WORDS;
+    cout << wordsArray[0];
+    for (int i = 0; i < pagesNums[0]; ++i) {
+        cout << wordsPages[0][i] << ' ';
     }
-    return 0;
+    //TODO: Delete old stats
+    cout << "Total words: " << wordsNum << '\n' << "Total pages: " << currentPageNum << '\n' << "Total lines: "
+         << currentLineNum;
+    file.close();
 }
+
