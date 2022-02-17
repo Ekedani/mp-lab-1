@@ -7,8 +7,9 @@ using namespace std;
 const string FILE_ADDRESS = "D:\\Programming\\mp-lab-1\\data.txt";
 const int NUM_OF_DISPLAYED_WORDS = 25;
 
-const int NUM_OF_STOP_WORDS = 3;
-const char* STOP_WORDS[] = { "for", "in", "the"};
+// Just as example of stop words handling
+const int NUM_OF_STOP_WORDS = 7;
+const char* STOP_WORDS[] = {"in", "on", "out", "of", "the", "an", "and"};
 
 int main() {
     ifstream file;
@@ -50,13 +51,13 @@ int main() {
                 if(wordEndIdx < lineSize && (((line[wordEndIdx] >= '0' && line[wordEndIdx] <= '9') ||
                                               ((line[wordEndIdx] >= 'A' && line[wordEndIdx] <= 'Z')) ||
                                               ((line[wordEndIdx] >= 'a' && line[wordEndIdx] <= 'z'))) ||
-                                              line[wordEndIdx] == '-')){
+                                              line[wordEndIdx] == '-' || line[wordEndIdx] == '\'')){
                     wordEndIdx++;
                     goto FIND_WORD_END;
                 }
             PROCESS_WORD:
                 int wordSize = wordEndIdx - wordStartIdx;
-                // Ignoring noise words (size less than 1)
+                // Ignoring noise words (size must be greater than 1)
                 if(wordSize > 1){
                     string test;
                     COPY_SUBSTR:
@@ -70,22 +71,44 @@ int main() {
                         wordStartIdx++;
                         goto COPY_SUBSTR;
                     }
-                    int comparedWordIdx = 0;
-                    CHECK_EXISTING_WORDS:
-                    bool stringsEqual = true;
-                    int comparedCharIdx = 0;
-                    CHECK_IF_EQUAL:
-                    stringsEqual &= (test[comparedCharIdx] == wordsArray[comparedWordIdx][comparedCharIdx]);
-                    if(stringsEqual && comparedCharIdx < wordSize){
-                        comparedCharIdx++;
-                        goto CHECK_IF_EQUAL;
+
+                    // Check if stop word
+                    int comparedStopWordIdx = 0;
+                    CHECK_STOP_WORDS:
+                    if(comparedStopWordIdx < NUM_OF_STOP_WORDS){
+                        bool stringsStopEqual = true;
+                        int comparedStopCharIdx = 0;
+                        CHECK_IF_EQUAL_TO_STOP:
+                        stringsStopEqual &= (test[comparedStopCharIdx] == STOP_WORDS[comparedStopWordIdx][comparedStopCharIdx]);
+                        if(stringsStopEqual && comparedStopCharIdx < wordSize){
+                            comparedStopCharIdx++;
+                            goto CHECK_IF_EQUAL_TO_STOP;
+                        }
+                        if(!stringsStopEqual){
+                            comparedStopWordIdx++;
+                            goto CHECK_STOP_WORDS;
+                        } else{
+                            goto PROCESS_LINE;
+                        }
                     }
-                    if(!stringsEqual && comparedWordIdx < wordsNum){
-                        comparedWordIdx++;
+
+                    // Check if new word
+                    int comparedExWordIdx = 0;
+                    CHECK_EXISTING_WORDS:
+                    bool stringsExEqual = true;
+                    int comparedExCharIdx = 0;
+                    CHECK_IF_EQUAL_TO_EX:
+                    stringsExEqual &= (test[comparedExCharIdx] == wordsArray[comparedExWordIdx][comparedExCharIdx]);
+                    if(stringsExEqual && comparedExCharIdx < wordSize){
+                        comparedExCharIdx++;
+                        goto CHECK_IF_EQUAL_TO_EX;
+                    }
+                    if(!stringsExEqual && comparedExWordIdx < wordsNum - 1){
+                        comparedExWordIdx++;
                         goto CHECK_EXISTING_WORDS;
                     }
-                    if(stringsEqual){
-                        wordsFrequency[comparedWordIdx]++;
+                    if(stringsExEqual){
+                        wordsFrequency[comparedExWordIdx]++;
                     }
                     else{
                         wordsArray[wordsNum] = test;
