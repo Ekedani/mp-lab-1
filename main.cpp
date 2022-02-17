@@ -20,38 +20,37 @@ int main() {
     string* wordsArray = new string[wordsArraySize];
     int* wordsFrequency = new int[wordsArraySize];
 
-    int wordStartIdx = 0;
-    int wordEndIdx = 0;
+    int wordStartIdx;
+    int wordEndIdx;
 
-    string line;
+    string currentLine;
     int lineSize;
 
     PROCESS_FILE:
-        getline(file, line);
+        getline(file, currentLine);
         lineSize = 0;
         wordStartIdx = 0;
 
         CALCULATE_LINE_LENGTH:
-        if(line[lineSize] != '\0'){
+        if(currentLine[lineSize] != '\0'){
             lineSize++;
             goto CALCULATE_LINE_LENGTH;
         }
 
         PROCESS_LINE:
-            // I really just wanna die
             FIND_WORD_START:
-                if (!((line[wordStartIdx] >= '0' && line[wordStartIdx] <= '9') ||
-                      ((line[wordStartIdx] >= 'A' && line[wordStartIdx] <= 'Z')) ||
-                      ((line[wordStartIdx] >= 'a' && line[wordStartIdx] <= 'z')))) {
+                if (!((currentLine[wordStartIdx] >= '0' && currentLine[wordStartIdx] <= '9') ||
+                      ((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
+                      ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))) {
                     wordStartIdx++;
                     goto FIND_WORD_START;
                 }
                 wordEndIdx = wordStartIdx;
             FIND_WORD_END:
-                if(wordEndIdx < lineSize && (((line[wordEndIdx] >= '0' && line[wordEndIdx] <= '9') ||
-                                              ((line[wordEndIdx] >= 'A' && line[wordEndIdx] <= 'Z')) ||
-                                              ((line[wordEndIdx] >= 'a' && line[wordEndIdx] <= 'z'))) ||
-                                              line[wordEndIdx] == '-' || line[wordEndIdx] == '\'')){
+                if(wordEndIdx < lineSize && (((currentLine[wordEndIdx] >= '0' && currentLine[wordEndIdx] <= '9') ||
+                                              ((currentLine[wordEndIdx] >= 'A' && currentLine[wordEndIdx] <= 'Z')) ||
+                                              ((currentLine[wordEndIdx] >= 'a' && currentLine[wordEndIdx] <= 'z'))) ||
+                                              currentLine[wordEndIdx] == '-' || currentLine[wordEndIdx] == '\'')){
                     wordEndIdx++;
                     goto FIND_WORD_END;
                 }
@@ -59,14 +58,19 @@ int main() {
                 int wordSize = wordEndIdx - wordStartIdx;
                 // Ignoring noise words (size must be greater than 1)
                 if(wordSize > 1){
-                    string test;
+                    // Average word length
+                    char currentWord[wordSize + 1];
+                    currentWord[wordSize] = '\0';
+                    int lastCharIdx = 0;
                     COPY_SUBSTR:
                     if(wordStartIdx < wordEndIdx){
-                        if(line[wordStartIdx] >= 65 && line[wordStartIdx] <= 90){
-                            test += line[wordStartIdx] + 32;
+                        if(currentLine[wordStartIdx] >= 65 && currentLine[wordStartIdx] <= 90){
+                            currentWord[lastCharIdx] = currentLine[wordStartIdx] + 32;
+                            lastCharIdx++;
                         }
                         else{
-                            test += line[wordStartIdx];
+                            currentWord[lastCharIdx] = currentLine[wordStartIdx];
+                            lastCharIdx++;
                         }
                         wordStartIdx++;
                         goto COPY_SUBSTR;
@@ -79,7 +83,7 @@ int main() {
                         bool stringsStopEqual = true;
                         int comparedStopCharIdx = 0;
                         CHECK_IF_EQUAL_TO_STOP:
-                        stringsStopEqual &= (test[comparedStopCharIdx] == STOP_WORDS[comparedStopWordIdx][comparedStopCharIdx]);
+                        stringsStopEqual &= (currentWord[comparedStopCharIdx] == STOP_WORDS[comparedStopWordIdx][comparedStopCharIdx]);
                         if(stringsStopEqual && comparedStopCharIdx < wordSize){
                             comparedStopCharIdx++;
                             goto CHECK_IF_EQUAL_TO_STOP;
@@ -100,7 +104,7 @@ int main() {
                         stringsExEqual = true;
                         int comparedExCharIdx = 0;
                         CHECK_IF_EQUAL_TO_EX:
-                        stringsExEqual &= (test[comparedExCharIdx] == wordsArray[comparedExWordIdx][comparedExCharIdx]);
+                        stringsExEqual &= (currentWord[comparedExCharIdx] == wordsArray[comparedExWordIdx][comparedExCharIdx]);
                         if(stringsExEqual && comparedExCharIdx < wordSize){
                             comparedExCharIdx++;
                             goto CHECK_IF_EQUAL_TO_EX;
@@ -114,7 +118,7 @@ int main() {
                         wordsFrequency[comparedExWordIdx]++;
                     }
                     else{
-                        wordsArray[wordsNum] = test;
+                        wordsArray[wordsNum] = currentWord;
                         wordsFrequency[wordsNum] = 1;
                         wordsNum++;
                     }
@@ -148,31 +152,31 @@ int main() {
                 goto PROCESS_FILE;
             }
 
+    file.close();
     SORT_BY_FREQUENCY:
     bool swapped = false;
-        int j = 0;
-        SORT_INNER:
-        if(wordsFrequency[j] < wordsFrequency[j + 1]){
-            int freqTmp = wordsFrequency[j];
-            string wordTmp = wordsArray[j];
-            wordsFrequency[j] = wordsFrequency[j + 1];
-            wordsArray[j] = wordsArray[j + 1];
-            wordsFrequency[j + 1] = freqTmp;
-            wordsArray[j + 1] = wordTmp;
-            swapped = true;
-        }
-        j++;
-        if(j < wordsNum - 1){
-            goto SORT_INNER;
-        }
-        if(swapped){
-            goto SORT_BY_FREQUENCY;
-        }
+    int j = 0;
+    SORT_INNER:
+    if (wordsFrequency[j] < wordsFrequency[j + 1]) {
+        int freqTmp = wordsFrequency[j];
+        string wordTmp = wordsArray[j];
+        wordsFrequency[j] = wordsFrequency[j + 1];
+        wordsArray[j] = wordsArray[j + 1];
+        wordsFrequency[j + 1] = freqTmp;
+        wordsArray[j + 1] = wordTmp;
+        swapped = true;
+    }
+    j++;
+    if (j < wordsNum - 1) {
+        goto SORT_INNER;
+    }
+    if (swapped) {
+        goto SORT_BY_FREQUENCY;
+    }
+    //TODO: REPLACE WITH GOTO
     for (int i = 0; i < wordsNum; ++i) {
-        cout << wordsArray[i] << " : " << wordsFrequency[i] << " #" << i << '\n';
+        cout << wordsArray[i] << " - " << wordsFrequency[i] << '\n';
 
     }
-    cout << wordsNum;
-    file.close();
     return 0;
 }
