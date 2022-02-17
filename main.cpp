@@ -174,7 +174,7 @@ int main() {
 
     int outputWordIdx = 0;
     OUTPUT_WORDS:
-    if (outputWordIdx < wordsNum) {
+    if (outputWordIdx < wordsNum && outputWordIdx < NUM_OF_DISPLAYED_WORDS) {
         cout << wordsArray[outputWordIdx] << " - " << wordsFrequency[outputWordIdx] << '\n';
         outputWordIdx++;
         goto OUTPUT_WORDS;
