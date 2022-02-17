@@ -173,10 +173,13 @@ int main() {
     if (swapped) {
         goto SORT_BY_FREQUENCY;
     }
-    //TODO: REPLACE WITH GOTO
-    for (int i = 0; i < wordsNum; ++i) {
-        cout << wordsArray[i] << " - " << wordsFrequency[i] << '\n';
 
+    int outputWordIdx = 0;
+    OUTPUT_WORDS:
+    if(outputWordIdx < wordsNum){
+        cout << wordsArray[outputWordIdx] << " - " << wordsFrequency[outputWordIdx] << '\n';
+        outputWordIdx++;
+        goto OUTPUT_WORDS;
     }
     return 0;
 }
