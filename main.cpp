@@ -5,6 +5,7 @@
 using namespace std;
 
 const string FILE_ADDRESS = "task2_input.txt";
+const string OUTPUT_FILE_ADDRESS = "task2_output.txt";
 
 const int LINES_PER_PAGE = 45;
 
@@ -47,8 +48,7 @@ int main() {
 
     PROCESS_LINE:
     FIND_WORD_START:
-    if (!((currentLine[wordStartIdx] >= '0' && currentLine[wordStartIdx] <= '9') ||
-          ((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
+    if (!(((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
           ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))) {
         wordStartIdx++;
         goto FIND_WORD_START;
@@ -172,6 +172,7 @@ int main() {
     if (!file.eof()) {
         goto PROCESS_FILE;
     }
+    file.close();
 
     string *oldWords = wordsArray;
     int *oldFrequency = wordsFrequency;
@@ -186,25 +187,91 @@ int main() {
     pagesCapacities = new int[wordsArraySize];
 
     int wordIndex = 0;
+    int newWordsNum = 0;
     COPY_INFREQUENT_TO_NEW:
-    wordsArray[wordIndex] = oldWords[wordIndex];
-    wordsFrequency[wordIndex] = oldFrequency[wordIndex];
-    wordsPages[wordIndex] = oldPages[wordIndex];
-    pagesNums[wordIndex] = oldPagesNums[wordIndex];
-    pagesCapacities[wordIndex] = oldPagesCapacities[wordIndex];
-    wordIndex++;
-
     if (wordIndex < wordsNum) {
+        if (oldFrequency[wordIndex] < 100) {
+            wordsArray[newWordsNum] = oldWords[wordIndex];
+            wordsFrequency[newWordsNum] = oldFrequency[wordIndex];
+            wordsPages[newWordsNum] = oldPages[wordIndex];
+            pagesNums[newWordsNum] = oldPagesNums[wordIndex];
+            pagesCapacities[newWordsNum] = oldPagesCapacities[wordIndex];
+            newWordsNum++;
+        }
+        wordIndex++;
         goto COPY_INFREQUENT_TO_NEW;
     }
 
-    cout << wordsArray[0];
-    for (int i = 0; i < pagesNums[0]; ++i) {
-        cout << wordsPages[0][i] << ' ';
+    wordsNum = newWordsNum;
+    delete[] oldWords;
+    delete[] oldFrequency;
+    delete[] oldPages;
+    delete[] oldPagesCapacities;
+    delete[] oldPagesNums;
+
+    SORT_ALPHABETICALLY:
+    bool swapped = false;
+    int j = 0;
+    SORT_INNER:
+    int leftLength = 0;
+    CALCULATE_LEFT_LENGTH:
+    if (wordsArray[j][leftLength] != '\0') {
+        leftLength++;
+        goto CALCULATE_LEFT_LENGTH;
     }
-    //TODO: Delete old stats
-    cout << "Total words: " << wordsNum << '\n' << "Total pages: " << currentPageNum << '\n' << "Total lines: "
-         << currentLineNum;
-    file.close();
+    int charIdx = 0;
+    bool leftGreater = false;
+    COMPARE_WORDS_ALPHABETICALLY:
+    if (charIdx < leftLength) {
+        leftGreater &= (wordsArray[j][charIdx] > wordsArray[j + 1][charIdx]);
+        if (wordsArray[j][charIdx] == wordsArray[j + 1][charIdx]) {
+            charIdx++;
+            goto COMPARE_WORDS_ALPHABETICALLY;
+        } else {
+            leftGreater = (wordsArray[j][charIdx] > wordsArray[j + 1][charIdx]);
+        }
+    }
+
+    if (leftGreater) {
+        int *pagesTmp = wordsPages[j];
+        int pageNumTmp = pagesNums[j];
+        string wordTmp = wordsArray[j];
+        wordsPages[j] = wordsPages[j + 1];
+        wordsArray[j] = wordsArray[j + 1];
+        pagesNums[j] = pagesNums[j + 1];
+        wordsPages[j + 1] = pagesTmp;
+        wordsArray[j + 1] = wordTmp;
+        pagesNums[j + 1] = pageNumTmp;
+        swapped = true;
+    }
+    j++;
+    if (j < wordsNum - 1) {
+        goto SORT_INNER;
+    }
+    if (swapped) {
+        goto SORT_ALPHABETICALLY;
+    }
+
+    int wordOutputIdx = 0;
+    ofstream output_file;
+    output_file.open(OUTPUT_FILE_ADDRESS);
+    OUTPUT_RESULT:
+    if (wordOutputIdx < wordsNum) {
+        output_file << wordsArray[wordOutputIdx] << " - ";
+        int outputWordPageIdx = 0;
+        OUTPUT_PAGES:
+        if (outputWordPageIdx < pagesNums[wordOutputIdx]) {
+            if (outputWordPageIdx != 0) {
+                output_file << ", ";
+            }
+            output_file << wordsPages[wordOutputIdx][outputWordPageIdx];
+            outputWordPageIdx++;
+            goto OUTPUT_PAGES;
+        }
+        output_file << '\n';
+        wordOutputIdx++;
+        goto OUTPUT_RESULT;
+    }
+    output_file.close();
 }
 
