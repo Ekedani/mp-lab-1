@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const string FILE_ADDRESS = "D:\\Programming\\mp-lab-1\\data.txt";
+const string FILE_ADDRESS = "task1_input.txt";
 const int NUM_OF_DISPLAYED_WORDS = 25;
 
 // Just as example of stop words handling
