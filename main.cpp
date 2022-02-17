@@ -54,11 +54,10 @@ int main() {
         wordEndIdx++;
         goto FIND_WORD_END;
     }
-    PROCESS_WORD:
+
     int wordSize = wordEndIdx - wordStartIdx;
     // Ignoring noise words (size must be greater than 1)
     if (wordSize > 1) {
-        // Average word length
         char currentWord[wordSize + 1];
         currentWord[wordSize] = '\0';
         int lastCharIdx = 0;
