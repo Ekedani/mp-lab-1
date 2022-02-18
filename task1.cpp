@@ -1,10 +1,13 @@
-#include <iostream>
+// Used for input and output data
 #include <fstream>
+// Used only as a container, without methods
 #include <string>
 
 using namespace std;
 
-const string FILE_ADDRESS = "task1_input.txt";
+const string INPUT_FILE_ADDRESS = "task1_input.txt";
+const string OUTPUT_FILE_ADDRESS = "task1_output.txt";
+
 const int NUM_OF_DISPLAYED_WORDS = 25;
 
 // Just as example of stop words handling
@@ -12,8 +15,8 @@ const int NUM_OF_STOP_WORDS = 7;
 const char *STOP_WORDS[] = {"in", "on", "out", "of", "the", "an", "and"};
 
 int main() {
-    ifstream file;
-    file.open(FILE_ADDRESS);
+    ifstream input_file;
+    input_file.open(INPUT_FILE_ADDRESS);
 
     int wordsArraySize = 10;
     int wordsNum = 0;
@@ -27,7 +30,7 @@ int main() {
     int lineSize;
 
     PROCESS_FILE:
-    getline(file, currentLine);
+    getline(input_file, currentLine);
     lineSize = 0;
     wordStartIdx = 0;
 
@@ -145,11 +148,11 @@ int main() {
         goto PROCESS_LINE;
     }
 
-    if (!file.eof()) {
+    if (!input_file.eof()) {
         goto PROCESS_FILE;
     }
 
-    file.close();
+    input_file.close();
     SORT_BY_FREQUENCY:
     bool swapped = false;
     int j = 0;
@@ -172,11 +175,14 @@ int main() {
     }
 
     int outputWordIdx = 0;
+    ofstream output_file;
+    output_file.open(OUTPUT_FILE_ADDRESS);
     OUTPUT_WORDS:
     if (outputWordIdx < wordsNum && outputWordIdx < NUM_OF_DISPLAYED_WORDS) {
-        cout << wordsArray[outputWordIdx] << " - " << wordsFrequency[outputWordIdx] << '\n';
+        output_file << wordsArray[outputWordIdx] << " - " << wordsFrequency[outputWordIdx] << '\n';
         outputWordIdx++;
         goto OUTPUT_WORDS;
     }
+    output_file.close();
     return 0;
 }
