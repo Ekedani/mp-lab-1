@@ -50,7 +50,8 @@ int main() {
     PROCESS_LINE:
     FIND_WORD_START:
     if (!(((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
-          ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))) {
+          ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))
+          && wordStartIdx < lineSize) {
         wordStartIdx++;
         goto FIND_WORD_START;
     }
@@ -176,7 +177,6 @@ int main() {
     file.close();
 
     string *oldWords = wordsArray;
-    int *oldFrequency = wordsFrequency;
     int **oldPages = wordsPages;
     int *oldPagesNums = pagesNums;
     int *oldPagesCapacities = pagesCapacities;
