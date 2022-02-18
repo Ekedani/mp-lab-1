@@ -11,8 +11,8 @@ const string OUTPUT_FILE_ADDRESS = "task1_output.txt";
 const int NUM_OF_DISPLAYED_WORDS = 25;
 
 // Just as example of stop words handling
-const int NUM_OF_STOP_WORDS = 7;
-const char *STOP_WORDS[] = {"in", "on", "out", "of", "the", "an", "and"};
+const int NUM_OF_STOP_WORDS = 8;
+const char *STOP_WORDS[] = {"in", "on", "out", "of", "the", "an", "and", "for"};
 
 int main() {
     ifstream input_file;
