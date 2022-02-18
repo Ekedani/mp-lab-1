@@ -1,17 +1,18 @@
-#include <iostream>
+// Used for input and output data
 #include <fstream>
+// Used only as a container, without methods
 #include <string>
 
 using namespace std;
 
-const string FILE_ADDRESS = "task2_input.txt";
+const string INPUT_FILE_ADDRESS = "task2_input.txt";
 const string OUTPUT_FILE_ADDRESS = "task2_output.txt";
 
 const int LINES_PER_PAGE = 45;
 
 int main() {
     ifstream file;
-    file.open(FILE_ADDRESS);
+    file.open(INPUT_FILE_ADDRESS);
     int wordsArraySize = 10;
     int wordsNum = 0;
     string *wordsArray = new string[wordsArraySize];
@@ -65,7 +66,7 @@ int main() {
     int wordSize = wordEndIdx - wordStartIdx;
 
     if (wordSize > 0) {
-        char currentWord[wordSize + 1];
+        char* currentWord = new char[wordSize + 1];
         currentWord[wordSize] = '\0';
         int lastCharIdx = 0;
         COPY_SUBSTR:
@@ -181,7 +182,6 @@ int main() {
     int *oldPagesCapacities = pagesCapacities;
 
     wordsArray = new string[wordsArraySize];
-    wordsFrequency = new int[wordsArraySize];
     wordsPages = new int *[wordsArraySize];
     pagesNums = new int[wordsArraySize];
     pagesCapacities = new int[wordsArraySize];
@@ -190,9 +190,8 @@ int main() {
     int newWordsNum = 0;
     COPY_INFREQUENT_TO_NEW:
     if (wordIndex < wordsNum) {
-        if (oldFrequency[wordIndex] < 100) {
+        if (wordsFrequency[wordIndex] < 100) {
             wordsArray[newWordsNum] = oldWords[wordIndex];
-            wordsFrequency[newWordsNum] = oldFrequency[wordIndex];
             wordsPages[newWordsNum] = oldPages[wordIndex];
             pagesNums[newWordsNum] = oldPagesNums[wordIndex];
             pagesCapacities[newWordsNum] = oldPagesCapacities[wordIndex];
@@ -204,10 +203,12 @@ int main() {
 
     wordsNum = newWordsNum;
     delete[] oldWords;
-    delete[] oldFrequency;
     delete[] oldPages;
     delete[] oldPagesCapacities;
     delete[] oldPagesNums;
+
+    // We don't need this anymore
+    delete[] wordsFrequency;
 
     SORT_ALPHABETICALLY:
     bool swapped = false;
