@@ -39,9 +39,9 @@ int main() {
 
     PROCESS_LINE:
     FIND_WORD_START:
-    if (!((currentLine[wordStartIdx] >= '0' && currentLine[wordStartIdx] <= '9') ||
-          ((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
-          ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))) {
+    if (!(((currentLine[wordStartIdx] >= 'A' && currentLine[wordStartIdx] <= 'Z')) ||
+          ((currentLine[wordStartIdx] >= 'a' && currentLine[wordStartIdx] <= 'z')))
+        && wordStartIdx < lineSize) {
         wordStartIdx++;
         goto FIND_WORD_START;
     }
@@ -58,7 +58,7 @@ int main() {
     int wordSize = wordEndIdx - wordStartIdx;
     // Ignoring noise words (size must be greater than 1)
     if (wordSize > 1) {
-        char currentWord[wordSize + 1];
+        char* currentWord = new char[wordSize + 1];
         currentWord[wordSize] = '\0';
         int lastCharIdx = 0;
         COPY_SUBSTR:
